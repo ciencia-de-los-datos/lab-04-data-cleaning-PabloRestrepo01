@@ -7,6 +7,8 @@ correctamente. Tenga en cuenta datos faltantes y duplicados.
 
 """
 import pandas as pd
+import re
+import datetime
 
 
 def clean_data():
@@ -22,13 +24,22 @@ def clean_data():
     df.monto_del_credito = df.monto_del_credito.str.replace(",","")
     df.monto_del_credito = df.monto_del_credito.astype(float)
     df.monto_del_credito = df.monto_del_credito.astype(int)
-    #df.fecha_de_beneficio = pd.to_datetime(df.fecha_de_beneficio, dayfirst=True)
+    df.fecha_de_beneficio = pd.to_datetime(df.fecha_de_beneficio, dayfirst=True)
 
     for fila in ['sexo', 'tipo_de_emprendimiento', 'idea_negocio', 'línea_credito', 'barrio']:
         df[fila] = df[fila].str.lower()
         df[fila] = df[fila].str.replace('_', ' ')
         df[fila] = df[fila].str.replace('-', ' ')
 
+    df.drop_duplicates(inplace=True)
+    df["fecha_de_beneficio"] = [
+        (
+            datetime.strptime(date, "%d/%m/%Y")
+            if bool(re.search(r"\d{1,2}/\d{2}/\d{4}", date))
+            else datetime.strptime(date, "%Y/%m/%d")
+        )
+        for date in df["fecha_de_beneficio"]
+    ]
     return df
 
 print(clean_data())
